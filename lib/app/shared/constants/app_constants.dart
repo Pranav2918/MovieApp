@@ -1,0 +1,3 @@
+const String apiKey =
+    "eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJiNzc1MjAyOTNkOGExZmU3YjFhNDBlNWMwMTcwMmYzMSIsIm5iZiI6MTcyOTE0ODA5NS40NTIsInN1YiI6IjY3MTBiNGJmMWI5MTJhZGQyZWRiYzg0ZiIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.v2kd6dWOu5x09-uqGhGuPA7ThSLon3u1rh65RpTsz1U";
+const String nowPlayingUrl = "https://api.themoviedb.org/3/movie/now_playing";
