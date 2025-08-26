@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:practical/app/data/models/now_playing_model.dart';
-import 'package:practical/app/presentation/home_screen/widgets/movie_card.dart';
+import 'package:practical/app/presentation/home_screen/widgets/movies_grid.dart';
 import 'package:practical/app/shared/extensions/extensions.dart';
 
 import 'cubits/now_playing/movie_cubit.dart';
@@ -18,6 +17,7 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   final ScrollController _scrollController = ScrollController();
   int _currentPage = 1;
+  bool _isGridView = true; // toggle state
 
   @override
   void initState() {
@@ -64,24 +64,46 @@ class _HomeScreenState extends State<HomeScreen> {
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                "Now Playing",
-                style: GoogleFonts.bebasNeue(
-                  fontSize: 35,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    "Now Playing",
+                    style: GoogleFonts.bebasNeue(
+                      fontSize: 35,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                  IconButton(
+                    icon: Icon(
+                      _isGridView ? Icons.view_list : Icons.grid_view,
+                      color: Colors.white,
+                    ),
+                    onPressed: () {
+                      setState(() {
+                        _isGridView = !_isGridView;
+                      });
+                    },
+                  ),
+                ],
               ),
               const SizedBox(height: 20),
 
-              // Movies Grid with Pagination
+              // Movies with Pagination
               Expanded(
                 child: BlocBuilder<MovieCubit, MovieState>(
                   builder: (context, state) {
                     if (state is MovieLoading && _currentPage == 1) {
                       return const Center(child: CircularProgressIndicator());
                     } else if (state is MovieLoaded) {
-                      return _ShowNowPlayingGrid(
+                      return _isGridView
+                          ? ShowNowPlayingGrid(
+                        movies: state.movieResponse.results,
+                        scrollController: _scrollController,
+                        isLoadingMore: context.read<MovieCubit>().isFetching,
+                      )
+                          : ShowNowPlayingList(
                         movies: state.movieResponse.results,
                         scrollController: _scrollController,
                         isLoadingMore: context.read<MovieCubit>().isFetching,
@@ -121,43 +143,3 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 }
-
-class _ShowNowPlayingGrid extends StatelessWidget {
-  final List<Movie> movies;
-  final ScrollController scrollController;
-  final bool isLoadingMore;
-
-  const _ShowNowPlayingGrid({
-    required this.movies,
-    required this.scrollController,
-    required this.isLoadingMore,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return GridView.builder(
-      controller: scrollController,
-      itemCount: isLoadingMore ? movies.length + 1 : movies.length,
-      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
-        mainAxisSpacing: 10.0,
-        crossAxisSpacing: 10.0,
-        mainAxisExtent: MediaQuery.of(context).size.height * 0.30,
-      ),
-      itemBuilder: (context, index) {
-        if (index < movies.length) {
-          return Hero(
-              tag: "poster_${movies[index].id}",
-              child: MovieCard(movie: movies[index]));
-        } else {
-          // Show loader at bottom while fetching more
-          return const Center(
-            child: CircularProgressIndicator(),
-          );
-        }
-      },
-    );
-  }
-}
-
-
