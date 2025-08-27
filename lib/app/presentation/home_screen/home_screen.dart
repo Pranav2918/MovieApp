@@ -16,8 +16,11 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   final ScrollController _scrollController = ScrollController();
+  final TextEditingController _searchController = TextEditingController();
+
   int _currentPage = 1;
-  bool _isGridView = true; // toggle state
+  bool _isGridView = true;
+  String _searchQuery = "";
 
   @override
   void initState() {
@@ -33,12 +36,20 @@ class _HomeScreenState extends State<HomeScreen> {
         }
       }
     });
+
+    _searchController.addListener(() {
+      setState(() {
+        _searchQuery = _searchController.text.trim().toLowerCase();
+      });
+    });
+
     super.initState();
   }
 
   @override
   void dispose() {
     _scrollController.dispose();
+    _searchController.dispose();
     super.dispose();
   }
 
@@ -64,6 +75,7 @@ class _HomeScreenState extends State<HomeScreen> {
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // Title + Toggle Button
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -88,6 +100,24 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ],
               ),
+              const SizedBox(height: 10),
+
+              // Search Bar
+              TextField(
+                controller: _searchController,
+                style: const TextStyle(color: Colors.white),
+                decoration: InputDecoration(
+                  hintText: "Search movies...",
+                  hintStyle: const TextStyle(color: Colors.white70),
+                  filled: true,
+                  fillColor: Colors.white.withOpacity(0.1),
+                  prefixIcon: const Icon(Icons.search, color: Colors.white70),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide.none,
+                  ),
+                ),
+              ),
               const SizedBox(height: 20),
 
               // Movies with Pagination
@@ -97,14 +127,32 @@ class _HomeScreenState extends State<HomeScreen> {
                     if (state is MovieLoading && _currentPage == 1) {
                       return const Center(child: CircularProgressIndicator());
                     } else if (state is MovieLoaded) {
+                      final allMovies = state.movieResponse.results;
+
+                      final movies = _searchQuery.isEmpty
+                          ? allMovies
+                          : allMovies.where((m) =>
+                          (m.title ?? "")
+                              .toLowerCase()
+                              .contains(_searchQuery.toLowerCase())).toList();
+
+                      if (movies.isEmpty) {
+                        return const Center(
+                          child: Text(
+                            "No movies found",
+                            style: TextStyle(color: Colors.white70),
+                          ),
+                        );
+                      }
+
                       return _isGridView
                           ? ShowNowPlayingGrid(
-                        movies: state.movieResponse.results,
+                        movies: movies,
                         scrollController: _scrollController,
                         isLoadingMore: context.read<MovieCubit>().isFetching,
                       )
                           : ShowNowPlayingList(
-                        movies: state.movieResponse.results,
+                        movies: movies,
                         scrollController: _scrollController,
                         isLoadingMore: context.read<MovieCubit>().isFetching,
                       );
