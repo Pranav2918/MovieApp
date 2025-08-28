@@ -3,7 +3,10 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:practical/app/presentation/home_screen/widgets/movies_grid.dart';
 import 'package:practical/app/shared/extensions/extensions.dart';
+import 'package:practical/app/shared/theme/sizer.dart';
 
+import '../../data/models/genre_model.dart';
+import 'cubits/genre/genre_cubit.dart';
 import 'cubits/now_playing/movie_cubit.dart';
 import 'cubits/now_playing/movie_states.dart';
 
@@ -21,6 +24,7 @@ class _HomeScreenState extends State<HomeScreen> {
   int _currentPage = 1;
   bool _isGridView = true;
   String _searchQuery = "";
+  Genre? _selectedGenre;
 
   @override
   void initState() {
@@ -119,6 +123,23 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
               const SizedBox(height: 20),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  SizedBox(
+                    height: Sizer.hPercent(5),
+                    width: Sizer.wPercent(40),
+                    child: GenreDropdown(
+                      onGenreSelected: (genre) {
+                        setState(() {
+                          _selectedGenre = genre;
+                        });
+                      },
+                    ),
+                  ),
+                  Text("KDS"),
+                ],
+              ),
 
               // Movies with Pagination
               Expanded(
@@ -129,12 +150,28 @@ class _HomeScreenState extends State<HomeScreen> {
                     } else if (state is MovieLoaded) {
                       final allMovies = state.movieResponse.results;
 
-                      final movies = _searchQuery.isEmpty
+                      // Apply search filter
+                      var movies = _searchQuery.isEmpty
                           ? allMovies
-                          : allMovies.where((m) =>
-                          (m.title ?? "")
-                              .toLowerCase()
-                              .contains(_searchQuery.toLowerCase())).toList();
+                          : allMovies
+                                .where(
+                                  (m) => (m.title ?? "").toLowerCase().contains(
+                                    _searchQuery,
+                                  ),
+                                )
+                                .toList();
+
+                      // Apply genre filter
+                      if (_selectedGenre != null) {
+                        print("Filtering by genre: ${_selectedGenre!.name}");
+                        movies = movies
+                            .where(
+                              (m) =>
+                                  m.genreIds.contains(_selectedGenre!.id) ??
+                                  false,
+                            )
+                            .toList();
+                      }
 
                       if (movies.isEmpty) {
                         return const Center(
@@ -147,22 +184,28 @@ class _HomeScreenState extends State<HomeScreen> {
 
                       return _isGridView
                           ? ShowNowPlayingGrid(
-                        movies: movies,
-                        scrollController: _scrollController,
-                        isLoadingMore: context.read<MovieCubit>().isFetching,
-                      )
+                              movies: movies,
+                              scrollController: _scrollController,
+                              isLoadingMore: context
+                                  .read<MovieCubit>()
+                                  .isFetching,
+                            )
                           : ShowNowPlayingList(
-                        movies: movies,
-                        scrollController: _scrollController,
-                        isLoadingMore: context.read<MovieCubit>().isFetching,
-                      );
+                              movies: movies,
+                              scrollController: _scrollController,
+                              isLoadingMore: context
+                                  .read<MovieCubit>()
+                                  .isFetching,
+                            );
                     } else if (state is MovieError) {
                       return Center(
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Text("Error: ${state.message}",
-                                style: const TextStyle(color: Colors.red)),
+                            Text(
+                              "Error: ${state.message}",
+                              style: const TextStyle(color: Colors.red),
+                            ),
                             const SizedBox(height: 10),
                             ElevatedButton(
                               onPressed: () {
@@ -188,6 +231,77 @@ class _HomeScreenState extends State<HomeScreen> {
           ).padSymmetric(h: 16, v: 40),
         ],
       ),
+    );
+  }
+}
+
+class GenreDropdown extends StatefulWidget {
+  final ValueChanged<Genre?> onGenreSelected;
+
+  const GenreDropdown({super.key, required this.onGenreSelected});
+
+  @override
+  State<GenreDropdown> createState() => _GenreDropdownState();
+}
+
+class _GenreDropdownState extends State<GenreDropdown> {
+  Genre? selectedGenre;
+
+  @override
+  void initState() {
+    super.initState();
+    context.read<GenreCubit>().fetchGenres();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocBuilder<GenreCubit, GenreState>(
+      builder: (context, state) {
+        if (state is GenreLoading) {
+          return const Center(child: CircularProgressIndicator());
+        } else if (state is GenreLoaded) {
+          return DropdownButton<Genre>(
+            iconEnabledColor: Colors.deepOrange,
+            dropdownColor: const Color(0xFF071e26),
+            value: selectedGenre,
+            hint: Text(
+              "Select Genre",
+              style: GoogleFonts.bebasNeue(fontSize: 18, color: Colors.grey),
+            ),
+            isExpanded: true,
+            items: state.genreResponse.genres
+                .map(
+                  (genre) => DropdownMenuItem(
+                    value: genre,
+                    child: Text(
+                      genre.name,
+                      style: GoogleFonts.bebasNeue(
+                        fontSize: 18,
+                        color: Colors.deepOrange,
+                      ),
+                    ),
+                  ),
+                )
+                .toList(),
+            onChanged: (Genre? value) {
+              setState(() {
+                selectedGenre = value;
+              });
+              widget.onGenreSelected(
+                value,
+              ); // <-- this sends selected genre to HomeScreen
+            },
+          );
+        } else if (state is GenreError) {
+          return GestureDetector(
+            onTap: () {
+              context.read<GenreCubit>().fetchGenres();
+            },
+            child: Text("Error: ${state.message}"),
+          );
+        }
+        return const SizedBox();
+      },
     );
   }
 }
