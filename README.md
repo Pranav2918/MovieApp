@@ -22,13 +22,13 @@ This project is focused entirely on **frontend UI/UX**, **clean architecture**, 
 <h3 align="left">📸 App Screenshots</h3>
 
 <p align="left">
-  <img src="screenshots/home.png" alt="Login Screen" width="200" height="400"/>
-  <img src="screenshots/genre_filters.png" alt="Home Screen" width="200" height="400"/>
-  <img src="screenshots/categories.png" alt="Cart Screen" width="200" height="400"/>
+  <img src="screenshots/home.png" alt="Home Screen" width="200" height="400"/>
+  <img src="screenshots/genre_filters.png" alt="Genre Filter Screen" width="200" height="400"/>
+  <img src="screenshots/categories.png" alt="Categories Filter Screen" width="200" height="400"/>
 </p>
 <p align="left">
-  <img src="screenshots/list.png" alt="Categories Screen" width="200" height="400"/>
-   <img src="screenshots/details.png.png" alt="Print Screen" width="200" height="400"/>
+  <img src="screenshots/list.png" alt="List Screen" width="200" height="400"/>
+   <img src="screenshots/details.png" alt="Details Screen" width="200" height="400"/>
 </p>
 <br>
 
