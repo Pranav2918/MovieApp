@@ -162,7 +162,7 @@ class MovieDetailsScreen extends StatelessWidget {
                               color: Colors.white,
                               size: 22,
                             ),
-                            const SizedBox(width: 10),
+                            10.h,
                             Text(
                               "Add to Watchlist",
                               style: GoogleFonts.poppins(

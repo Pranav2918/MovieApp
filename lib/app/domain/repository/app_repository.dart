@@ -16,6 +16,33 @@ class AppRepository {
     return MovieResponse.fromJson(response);
   }
 
+  Future<MovieResponse> fetchPopularMovies(int page) async {
+    var response = await _dioHelper.get(
+      url: popularMoviesUrl,
+      isAuthRequired: true,
+      queryParams: {'language': "en-US", 'page': page},
+    );
+    return MovieResponse.fromJson(response);
+  }
+
+  Future<MovieResponse> fetchTopRatedMovies(int page) async {
+    var response = await _dioHelper.get(
+      url: topRatedUrl,
+      isAuthRequired: true,
+      queryParams: {'language': "en-US", 'page': page},
+    );
+    return MovieResponse.fromJson(response);
+  }
+
+  Future<MovieResponse> fetchUpcomingMovies(int page) async {
+    var response = await _dioHelper.get(
+      url: upcomingUrl,
+      isAuthRequired: true,
+      queryParams: {'language': "en-US", 'page': page},
+    );
+    return MovieResponse.fromJson(response);
+  }
+
   Future<GenreResponse> fetchGenres() async {
     var response = await _dioHelper.get(
       url: genreListUrl,

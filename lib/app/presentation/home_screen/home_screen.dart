@@ -1,14 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:practical/app/presentation/home_screen/widgets/category_dropdown.dart';
+import 'package:practical/app/shared/extensions/movie_category_extension.dart';
 import 'package:practical/app/presentation/home_screen/widgets/movies_grid.dart';
 import 'package:practical/app/shared/extensions/extensions.dart';
 import 'package:practical/app/shared/theme/sizer.dart';
 
 import '../../data/models/genre_model.dart';
 import 'cubits/genre/genre_cubit.dart';
-import 'cubits/now_playing/movie_cubit.dart';
-import 'cubits/now_playing/movie_states.dart';
+import 'cubits/movies/movie_cubit.dart';
+import 'cubits/movies/movie_states.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -26,17 +28,19 @@ class _HomeScreenState extends State<HomeScreen> {
   String _searchQuery = "";
   Genre? _selectedGenre;
 
+  MovieCategory _selectedCategory = MovieCategory.nowPlaying;
+
   @override
   void initState() {
     final movieCubit = context.read<MovieCubit>();
-    movieCubit.fetchNowPlayingMovies(_currentPage);
+    movieCubit.fetchMovies(_selectedCategory, _currentPage);
 
     _scrollController.addListener(() {
       if (_scrollController.position.pixels >=
           _scrollController.position.maxScrollExtent - 200) {
         if (movieCubit.state is MovieLoaded && !movieCubit.isFetching) {
           _currentPage++;
-          movieCubit.fetchNowPlayingMovies(_currentPage, append: true);
+          movieCubit.fetchMovies(_selectedCategory, _currentPage, append: true);
         }
       }
     });
@@ -79,33 +83,48 @@ class _HomeScreenState extends State<HomeScreen> {
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Title + Toggle Button
+              // Title + View Toggle + Category Dropdown
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    "Now Playing",
+                    _selectedCategory.label,
                     style: GoogleFonts.bebasNeue(
                       fontSize: 35,
                       fontWeight: FontWeight.bold,
                       color: Colors.white,
                     ),
                   ),
-                  IconButton(
-                    icon: Icon(
-                      _isGridView ? Icons.view_list : Icons.grid_view,
-                      color: Colors.white,
-                    ),
-                    onPressed: () {
-                      setState(() {
-                        _isGridView = !_isGridView;
-                      });
-                    },
+                  Row(
+                    children: [
+                      CategoryDropdown(
+                        selectedCategory: _selectedCategory,
+                        onCategorySelected: (category) {
+                          setState(() {
+                            _selectedCategory = category;
+                            _currentPage = 1;
+                          });
+                          context
+                              .read<MovieCubit>()
+                              .fetchMovies(category, _currentPage);
+                        },
+                      ),
+                      IconButton(
+                        icon: Icon(
+                          _isGridView ? Icons.view_list : Icons.grid_view,
+                          color: Colors.white,
+                        ),
+                        onPressed: () {
+                          setState(() {
+                            _isGridView = !_isGridView;
+                          });
+                        },
+                      ),
+                    ],
                   ),
                 ],
               ),
-              const SizedBox(height: 10),
-
+              10.h,
               // Search Bar
               TextField(
                 controller: _searchController,
@@ -122,7 +141,8 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ),
               ),
-              const SizedBox(height: 20),
+              20.h,
+              // Genre filter row
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -137,7 +157,6 @@ class _HomeScreenState extends State<HomeScreen> {
                       },
                     ),
                   ),
-                  Text("KDS"),
                 ],
               ),
 
@@ -150,26 +169,24 @@ class _HomeScreenState extends State<HomeScreen> {
                     } else if (state is MovieLoaded) {
                       final allMovies = state.movieResponse.results;
 
-                      // Apply search filter
+                      // Search filter
                       var movies = _searchQuery.isEmpty
                           ? allMovies
                           : allMovies
-                                .where(
-                                  (m) => (m.title ?? "").toLowerCase().contains(
-                                    _searchQuery,
-                                  ),
-                                )
-                                .toList();
+                          .where((m) =>
+                          (m.title ?? "")
+                              .toLowerCase()
+                              .contains(_searchQuery))
+                          .toList();
 
-                      // Apply genre filter
+                      // Genre filter
                       if (_selectedGenre != null) {
-                        print("Filtering by genre: ${_selectedGenre!.name}");
                         movies = movies
                             .where(
                               (m) =>
-                                  m.genreIds.contains(_selectedGenre!.id) ??
-                                  false,
-                            )
+                          m.genreIds.contains(_selectedGenre!.id) ??
+                              false,
+                        )
                             .toList();
                       }
 
@@ -184,19 +201,17 @@ class _HomeScreenState extends State<HomeScreen> {
 
                       return _isGridView
                           ? ShowNowPlayingGrid(
-                              movies: movies,
-                              scrollController: _scrollController,
-                              isLoadingMore: context
-                                  .read<MovieCubit>()
-                                  .isFetching,
-                            )
+                        movies: movies,
+                        scrollController: _scrollController,
+                        isLoadingMore:
+                        context.read<MovieCubit>().isFetching,
+                      )
                           : ShowNowPlayingList(
-                              movies: movies,
-                              scrollController: _scrollController,
-                              isLoadingMore: context
-                                  .read<MovieCubit>()
-                                  .isFetching,
-                            );
+                        movies: movies,
+                        scrollController: _scrollController,
+                        isLoadingMore:
+                        context.read<MovieCubit>().isFetching,
+                      );
                     } else if (state is MovieError) {
                       return Center(
                         child: Column(
@@ -206,13 +221,13 @@ class _HomeScreenState extends State<HomeScreen> {
                               "Error: ${state.message}",
                               style: const TextStyle(color: Colors.red),
                             ),
-                            const SizedBox(height: 10),
+                            10.h,
                             ElevatedButton(
                               onPressed: () {
                                 _currentPage = 1;
                                 context
                                     .read<MovieCubit>()
-                                    .fetchNowPlayingMovies(_currentPage);
+                                    .fetchMovies(_selectedCategory, _currentPage);
                               },
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: Colors.deepOrange,
@@ -223,7 +238,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                       );
                     }
-                    return const SizedBox();
+                    return 0.h;
                   },
                 ),
               ),
@@ -300,7 +315,7 @@ class _GenreDropdownState extends State<GenreDropdown> {
             child: Text("Error: ${state.message}"),
           );
         }
-        return const SizedBox();
+        return 0.h;
       },
     );
   }

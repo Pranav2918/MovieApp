@@ -1,6 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../domain/repository/app_repository.dart';
-import '../now_playing/movie_states.dart';
+import '../movies/movie_states.dart';
 
 
 class GenreCubit extends Cubit<GenreState> {
@@ -11,7 +11,6 @@ class GenreCubit extends Cubit<GenreState> {
     try {
       emit(GenreLoading());
       final genreResponse = await repository.fetchGenres();
-      print("Genre Response: $genreResponse");
       emit(GenreLoaded(genreResponse));
     } catch (e) {
       emit(GenreError(e.toString()));

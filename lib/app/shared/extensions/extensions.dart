@@ -45,9 +45,9 @@ extension PaddingExtension on Widget {
 extension VisibilityExtension on Widget {
   Widget get visible => this;
 
-  Widget get gone => const SizedBox.shrink();
+  Widget get gone => 0.h;
 
-  Widget show(bool condition) => condition ? this : const SizedBox.shrink();
+  Widget show(bool condition) => condition ? this : 0.h;
 }
 
 /// ----------------------------

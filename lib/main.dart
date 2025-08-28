@@ -2,9 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:practical/app/domain/repository/app_repository.dart';
 
-import 'app/domain/dio_helper/dio_helper.dart';
 import 'app/presentation/home_screen/cubits/genre/genre_cubit.dart';
-import 'app/presentation/home_screen/cubits/now_playing/movie_cubit.dart';
+import 'app/presentation/home_screen/cubits/movies/movie_cubit.dart';
 import 'app/presentation/home_screen/home_screen.dart';
 import 'app/shared/theme/sizer.dart';
 
