@@ -1,16 +1,37 @@
-# practical
+# 🎥 Movie App - TMDB APIs
 
-A new Flutter project.
+A beautiful and responsive **Movie Application** UI clone made using **Flutter**, mimicking the real-world streaming app experience.
 
-## Getting Started
+This project is focused entirely on **frontend UI/UX**, **clean architecture**, **API calling structure** , aiming to replicate the original app’s look and feel using Flutter best practices.
 
-This project is a starting point for a Flutter application.
+<br>
 
-A few resources to get you started if this is your first Flutter project:
+## 🚀 Features
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+- ✅ Home Screen
+- ✅ Movie view in Grid and List format
+- ✅ Responsive design using `Sizer` for all screen sizes
+- ✅ Filter Selection dropdowns
+- ✅ Movie Details Screen with all relevant information
+- ✅ Reusable widgets and clean code structure
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+<br>
+
+## 📱 Screenshots
+
+<h3 align="left">📸 App Screenshots</h3>
+
+<p align="left">
+  <img src="screenshots/home.png" alt="Login Screen" width="200" height="400"/>
+  <img src="screenshots/genre_filters.png" alt="Home Screen" width="200" height="400"/>
+  <img src="screenshots/categories.png" alt="Cart Screen" width="200" height="400"/>
+</p>
+<p align="left">
+  <img src="screenshots/list.png" alt="Categories Screen" width="200" height="400"/>
+   <img src="screenshots/details.png.png" alt="Print Screen" width="200" height="400"/>
+</p>
+<br>
+
+<h4> Don't forget to give ⭐ if you find this helpful </h4>
+
+<h4> Till then, Keep Fluttering 💙</h4>
